@@ -49,7 +49,13 @@ int main(int argc, char* argv[]){
         #if DEBUG
             printf("directed\n");
         #endif
-
+        DirectedGraph dg;
+        dg.init_arr(fin);
+        dg.MST();
+        FILE* fout = fopen(argv[2], "w");
+        dg.OutToFile(fout);
+        fclose(fout);
+        dg.check_connect_cycle(0);
 
     }else{
         #if DEBUG

@@ -79,7 +79,8 @@ void UndirectedGraph::sort_edges(){
 
     int v1,v2,s1,s2,s1_size,s2_size;
     #if 1
-    for(vector<edge>&bucket:buckets){
+    for(int j=200;j>=0;j--){
+        vector<edge>& bucket = buckets[j];
         if (bucket.size()!=0){
             // for(int j=0;j<bucket.size();j++){
             for(edge& e:bucket){    
