@@ -17,6 +17,11 @@ DirectedGraph::DirectedGraph(){
     vertex_size = 0;
     edges.clear();
     vertices.clear();
+    sets.clear();
+    for(int i=0;i<201;i++){
+        buckets[i].clear();
+        unused_buckets[i].clear();
+    }
 }
 
 
@@ -64,7 +69,10 @@ int DirectedGraph::init_arr(FILE* fin){
     }
     return 0;
 }
-
+/**
+ * Using simple MST construct basic Connected Graph
+ * Using cycle check put edge into graph and avoid cycle
+*/
 void DirectedGraph::MST(){
     // sort(edges.begin(),edges.end());
     #if DEBUG
@@ -127,9 +135,10 @@ void DirectedGraph::MST(){
                             #endif
                             vertices[e.v1].out_edges.pop_back();
                             vertices[e.v2].in_edges.pop_back();
-                            continue;
+                            // continue;
+                        }else{
+                            e.used = 1;
                         }
-                        e.used = 1;
                     }
                     /*
                     if(s1_size==vertex_size){
@@ -141,6 +150,11 @@ void DirectedGraph::MST(){
                     continue;
                     */
                 }
+                if(e.used==0){
+                    unused_buckets[j].push_back(e);
+                }
+
+
             }
         
         }
@@ -182,22 +196,25 @@ void DirectedGraph::clear(){
 
 void DirectedGraph::OutToFile(FILE *fout){
     #if 1
-        for(vector<edge>&bucket:buckets){
+        for(vector<edge>&bucket:unused_buckets){
             for(edge&e:bucket){
-                if(e.used==0){
+                // if(e.used==0){
                     notused+=e.weight;
-                }
+                // }
             }
         }
         fprintf(fout, "%d\n", notused);
         #if DEBUG
             printf("not used: %d\n",notused);
         #endif
-        for(vector<edge>&bucket:buckets){
+
+
+        for(vector<edge>&bucket:unused_buckets){
             for(edge&e:bucket){
-                if(e.used==0){
+                // if(e.used==0){
                     fprintf(fout, "%d %d %d\n",e.v1,e.v2,e.weight);
-                }
+                    printf("%d %d %d %d\n",e.v1,e.v2,e.weight,e.index);
+                // }
             }
         }
     #else
@@ -374,7 +391,7 @@ bool DirectedGraph::check_connect_cycle(int index){
                 int erindex = 0;
                 // printf("number of v vr.in_edges:%d %ld\n",v,vr.in_edges.size());
                 for(edge &er:vr.in_edges){
-                    if(er==e){
+                    if(er.index==e.index){
                         vr.in_edges.erase(vr.in_edges.begin()+erindex);
                         // printf("cut edge %d %d %d\n",e.v1,e.v2,e.weight);
                         // break;

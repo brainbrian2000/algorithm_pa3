@@ -11,7 +11,7 @@ using namespace std;
 class DirectedGraph{
     public:
         int notused=0;
-        vector<edge> buckets[201];
+        vector<edge> buckets[201],unused_buckets[201],temp_buckets[201];
         int edge_size;
         int vertex_size;
         vector<edge> edges;
@@ -27,6 +27,9 @@ class DirectedGraph{
         bool DFS_d(int v_start);
         bool DFS_u(int v_start);
         bool check_connect_cycle(int index);
+        bool Relax();
+
+
 };
 
 
