@@ -1,3 +1,11 @@
+/**
+ * Work by Chieh-Hsiang Fan B08209023 NTUAS
+ * Algorigthm: PA3
+ * Minimum Feedback Arc Set-> using Minimum Spanning Tree method and greedy algorithm
+ * 2023/12
+*/
+
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<cstdlib>
@@ -9,8 +17,11 @@
 #include"directed.h"
 #define DEBUG 0
 using namespace std;
+// clock_t start, check;
+double bfs,top;
 
 int main(int argc, char* argv[]){
+    // start = clock();
     if (argc != 3) {
         printf("./bin/cb [input_file] [output_file]\n");
         return 0;
@@ -51,15 +62,29 @@ int main(int argc, char* argv[]){
         #endif
         DirectedGraph dg;
         // dg.clear();
+        dg.start = clock();
         dg.init_arr(fin);
         dg.MST();
         FILE* fout = fopen(argv[2], "w");
+        // dg.dump();
+        // dg.Relax();
+        // printf("check\n");
+        DirectedGraph dg2;
+        // dg.check_connect_cycle(0);
+        if(dg.BFS_u(0)){
+            printf("not connected\n");
+        }
+        if(dg.topological_cycle(dg2)){
+            printf("with cycle\n");
+        }else{
+            printf("no cycle and connected\n");
+        }
+        // printf("check\n");
+        
+        
+        // dg.dump();
         dg.OutToFile(fout);
         fclose(fout);
-        dg.Relax();
-        printf("check\n");
-        dg.check_connect_cycle(0);
-        // dg.dump();
 
     }else{
         #if DEBUG

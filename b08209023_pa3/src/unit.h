@@ -2,6 +2,8 @@
 #define UNIT_H
 #include<vector>
 using namespace std;
+
+
 class edge{
     /*
     This class can use in not noly undirected graph but also directed graph.
@@ -20,6 +22,21 @@ class edge{
         }
         bool operator==(const edge& e) const{
             return (v1==e.v1 && v2==e.v2 && weight==e.weight && used==e.used);
+        }
+};
+
+class edgeset{
+    public:
+        int total_weight=0;
+        vector<edge> edges;
+        bool operator<(const edgeset& e) const{
+            return total_weight < e.total_weight;
+        }
+        bool operator==(const edgeset& e) const{
+            return (total_weight==e.total_weight && edges==e.edges);
+        }
+        bool operator>(const edgeset& e) const{
+            return total_weight > e.total_weight;
         }
 };
 
