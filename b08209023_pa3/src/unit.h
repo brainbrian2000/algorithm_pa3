@@ -10,7 +10,7 @@ class edge{
         int weight=0;
         int v1=0;
         int v2=0;
-        bool used=0;//0 not used, 1 used
+        bool used=0;//0 not used, 1 used only use in MST
         // bool temp_used=0;//0 not used, 1 used
         int index=0;
         edge(){

@@ -50,12 +50,16 @@ int main(int argc, char* argv[]){
             printf("directed\n");
         #endif
         DirectedGraph dg;
+        // dg.clear();
         dg.init_arr(fin);
         dg.MST();
         FILE* fout = fopen(argv[2], "w");
         dg.OutToFile(fout);
         fclose(fout);
+        dg.Relax();
+        printf("check\n");
         dg.check_connect_cycle(0);
+        // dg.dump();
 
     }else{
         #if DEBUG

@@ -9,7 +9,9 @@
 #include"directed.h"
 #include"unit.h"
 #define DEBUG 0
-
+#include <time.h>
+#define timer 0
+#define DUMP 0
 using namespace std;
 // using namespace UndirectedGraph
 DirectedGraph::DirectedGraph(){
@@ -69,6 +71,10 @@ int DirectedGraph::init_arr(FILE* fin){
     }
     return 0;
 }
+
+
+
+
 /**
  * Using simple MST construct basic Connected Graph
  * Using cycle check put edge into graph and avoid cycle
@@ -128,8 +134,32 @@ void DirectedGraph::MST(){
                         //check if with this edge will have a cycle or not.
                         vertices[e.v1].out_edges.push_back(e);
                         vertices[e.v2].in_edges.push_back(e);
+                        #if timer
+                            DirectedGraph G;
+                        /**
+                         * Result is BFS_d is faster than topological_cycle for cycle detection
+                        */
+                            clock_t start, end;
+                            double bfs,top;
+                            start = clock();
+                            BFS_d(e.v1);
+                            end = clock();
+                            bfs = (double)(end - start) / CLOCKS_PER_SEC;
+                            start = clock();
+                            topological_cycle(G);
+                            end = clock();
+                            top = (double)(end - start) / CLOCKS_PER_SEC;
+                            printf("BFS_d topological_cycle: %f %f\n",bfs,top);
+                            if(top<bfs){
+                                faster++;
+                            }else{
+                                slower++;
+                            }
+                        #endif
+
+
                         if(BFS_d(e.v1)){
-                            //faster than Topology sort with coketile check cycle
+                            //faster than Topology sort
                             #if DEBUG
                                 printf("\nfind cycle\n");
                             #endif
@@ -140,15 +170,6 @@ void DirectedGraph::MST(){
                             e.used = 1;
                         }
                     }
-                    /*
-                    if(s1_size==vertex_size){
-                        #if DEBUG
-                            printf("Early terminate\n");
-                        #endif
-                        return;
-                    }
-                    continue;
-                    */
                 }
                 if(e.used==0){
                     unused_buckets[j].push_back(e);
@@ -176,8 +197,9 @@ void DirectedGraph::MST(){
         }
     }
     #endif
-
-
+    #if timer
+        printf("topological_cycle is faster slower: %d %d\n",faster,slower);
+    #endif
 
     return ;
 }
@@ -188,9 +210,15 @@ void DirectedGraph::MST(){
 void DirectedGraph::clear(){
     edge_size = 0;
     vertex_size = 0;
+    notused = 0;
     edges.clear();
     sets.clear();
     vertices.clear();
+    for(int i=0;i<201;i++){
+        buckets[i].clear();
+        unused_buckets[i].clear();
+        temp_buckets[i].clear();
+    }
     return ;
 }
 
@@ -213,7 +241,6 @@ void DirectedGraph::OutToFile(FILE *fout){
             for(edge&e:bucket){
                 // if(e.used==0){
                     fprintf(fout, "%d %d %d\n",e.v1,e.v2,e.weight);
-                    printf("%d %d %d %d\n",e.v1,e.v2,e.weight,e.index);
                 // }
             }
         }
@@ -231,6 +258,32 @@ void DirectedGraph::OutToFile(FILE *fout){
 
     return ;
 }
+/**
+ * 
+*/
+void DirectedGraph::dump(){
+    // if(check_connect_cycle(0)){
+    //     printf("==========ERROR=========\n");
+    // }else{
+        for(vertex& v:vertices){
+            printf("vertex %d \n",v.id);
+            printf("    in edges from:");
+            for(edge& e:v.in_edges){
+                printf("[%d,%d]",e.v1,e.weight);
+            }
+            printf("\n");
+            printf("    out edges to :");
+            for(edge& e:v.out_edges){
+                printf("[%d,%d]",e.v2,e.weight);
+            }
+            printf("\n");
+        }
+        for(edge& e:edges){
+            printf("edge %d %d %d\n",e.v1,e.v2,e.weight);
+        }
+    // }
+}
+
 
 /**
  * return 1 if there find a cycle from v_start
@@ -380,7 +433,7 @@ bool DirectedGraph::check_connect_cycle(int index){
         }
     }
     //cocktile
-    int size,vns;
+    
     while(!not_source.empty()){
         //cut edges
         while(!source.empty()){
@@ -401,9 +454,9 @@ bool DirectedGraph::check_connect_cycle(int index){
                 // printf("number of v vr.in_edges:%d %ld\n",v,vr.in_edges.size());
             }
         }
-        size = not_source.size();
+        int size = not_source.size();
         for(int i=0;i<size;i++){
-            vns = not_source.front();
+            int vns = not_source.front();
             not_source.pop();
             // printf("in edge size of i vertex %d: %ld\n",vns,vertices_copy[i].in_edges.size());
             if(vertices_copy[vns].in_edges.size()==0){
@@ -427,3 +480,227 @@ bool DirectedGraph::check_connect_cycle(int index){
     //because not source is empty so graph is without cycle
     return 0;
 }
+
+/**
+ * return 1 if there find a cycle from graph mother and using reference G with cycle elements
+ * @param G output graph
+ * using cocktile to check cycle
+ * ->using not noly source but also sink
+*/
+bool DirectedGraph::topological_cycle(DirectedGraph &G){
+    queue<int> source,not_source_sink,sink;
+    vector<vertex> vertices_copy;
+    // dump();
+    vertices_copy.reserve(vertices.size());
+    //check if there is isolated vertex
+    for(vertex v:vertices){
+        vertices_copy.push_back(v);
+    }
+    //check if Graph is connected or not
+    //because if Graph is without cycle, it can remove source's all edge and check the new sources and until there is no source and no remain vertices.
+    //method->only for check so copy the vertices
+
+    for(vertex& v:vertices_copy){
+        if(v.in_edges.size()==0){
+            source.push(v.id);
+        }else if(v.out_edges.size()==0){
+            sink.push(v.id);
+        }else{
+            not_source_sink.push(v.id);
+        }
+    }
+    //cocktile
+    while(!not_source_sink.empty()){
+        //cut edges
+        while(!source.empty()){
+            int v = source.front();
+            source.pop();
+            for(edge& e:vertices_copy[v].out_edges){
+                vertex& vr = vertices_copy[e.v2];
+                int erindex = 0;
+                for(edge &er:vr.in_edges){
+                    if(er.index==e.index){
+                        vr.in_edges.erase(vr.in_edges.begin()+erindex);
+                    }
+                    erindex++;
+                }
+            }
+        }
+        while(!sink.empty()){
+            int v = sink.front();
+            sink.pop();
+            for(edge& e:vertices_copy[v].in_edges){
+                vertex& vr = vertices_copy[e.v1];
+                int erindex = 0;
+                for(edge &er:vr.out_edges){
+                    if(er.index==e.index){
+                        vr.out_edges.erase(vr.out_edges.begin()+erindex);
+                    }
+                    erindex++;
+                }
+            }
+        }
+        int size = not_source_sink.size();
+        int vns;
+        for(int i=0;i<size;i++){
+            vns = not_source_sink.front();
+            not_source_sink.pop();
+            // printf("in edge size of i vertex %d: %ld\n",vns,vertices_copy[i].in_edges.size());
+            if(vertices_copy[vns].in_edges.size()==0){
+                source.push(vns);
+            }else if (vertices_copy[vns].out_edges.size()==0){
+                sink.push(vns);
+            }
+            else{
+                not_source_sink.push(vns);
+            }
+        }
+        
+        // printf("source sink not_source size: %ld %ld %ld\n",source.size(),sink.size(),not_source.size());
+        if(source.empty()&&!not_source_sink.empty()){
+            if(not_source_sink.empty()){
+                // printf("Graph without cycle\n");
+                return 0;
+            }else{
+                // printf("Graph has cycle\n");
+                G.clear();
+                size = not_source_sink.size();
+                for(int i=0;i<size;i++){
+                    vns = not_source_sink.front();
+                    not_source_sink.pop();
+                    G.vertices.push_back(vertices_copy[vns]);
+                    for(edge e:vertices_copy[vns].in_edges){
+                        G.edges.push_back(e);
+                        G.buckets[e.weight+100].push_back(e);
+                    }
+                }
+                return 1;
+            }
+        }
+    }
+    //because not source is empty so graph is without cycle
+    return 0;
+
+
+}
+/**
+ * Edge state change from used to not used
+*/
+void DirectedGraph::cut_edge(edge& e){
+    // printf("remove edge %d %d %d\n",e.v1,e.v2,e.weight);
+    int erindex = 0;
+    for(edge& er:vertices[e.v1].out_edges){
+        if(er.index==e.index){
+            vertices[e.v1].out_edges.erase(vertices[e.v1].out_edges.begin()+erindex);
+            break;
+        }
+        erindex++;
+    }
+    erindex = 0;
+    for(edge &er:vertices[e.v2].in_edges){
+        if(er.index==e.index){
+            vertices[e.v2].in_edges.erase(vertices[e.v2].in_edges.begin()+erindex);
+            break;
+        }
+        erindex++;
+    }
+    // for(int i=0;i<buckets[e.weight+100].size();i++){
+    //     if(buckets[e.weight+100][i].index==e.index){
+    //         buckets[e.weight+100].erase(buckets[e.weight+100].begin()+i);
+    //         break;
+    //     }
+    // }
+    unused_buckets[e.weight+100].push_back(e);
+
+    return ;
+}
+
+
+/**
+ * Edge state change from not used to used
+*/
+void DirectedGraph::insert_edge(edge &e){
+    // printf("add edge %d %d %d\n",e.v1,e.v2,e.weight);
+    int erindex = 0;
+    vertices[e.v1].out_edges.push_back(e);
+    vertices[e.v2].in_edges.push_back(e);
+    for(int i=0;i<unused_buckets[e.weight+100].size();i++){
+        if(unused_buckets[e.weight+100][i].index==e.index){
+            unused_buckets[e.weight+100].erase(unused_buckets[e.weight+100].begin()+i);
+            break;
+        }
+    }
+    // buckets[e.weight+100].push_back(e);
+    return ;
+}
+
+/**
+ * Relax->detect the unused edge and add it by decreasing order of weight
+ * using topological_cycle to check cycle elements and return it by reference G
+ * using G to find "temp" good cycle by using sliding window method
+ * 
+*/
+bool DirectedGraph::Relax(){
+    //1->sliding window method
+    DirectedGraph G;
+    for(int i=0;i<201;i++){
+        temp_buckets[i].clear();
+        temp_buckets[i].reserve(unused_buckets[i].size());
+        temp_buckets[i].assign(unused_buckets[i].begin(),unused_buckets[i].end());
+        if(unused_buckets[i].size()!=0){
+        for(edge& e:temp_buckets[i]){
+                //find the big edge and using it add into graph(mother graph)
+                //because we using MST method so MST it again is useless
+                //using "append this edge and check the cycle" method
+                // printf("edge %d %d %d\n",e.v1,e.v2,e.weight);
+                // vertices[e.v1].out_edges.push_back(e);
+                // vertices[e.v2].in_edges.push_back(e);
+                
+                // e.used = 1;
+                
+                insert_edge(e);
+                topological_cycle(G);
+                #if DUMP
+                    G.dump();
+                #endif
+                //silding window method 1 begin
+                /**
+                 * Cut from small to large until 2 cases of condition
+                 * 1. find the graph is without cycle->Nice
+                 * 2. previous cut edge weight + current cut edge weight > add edge weight->bad
+                 * 
+                 * -->check sum of weight of cut edges is larger than add edge weight or not
+                 *      1. try rm edges form second-large to small single by single 
+                 *      2. try rm edges form small to large
+                */
+                // vector<edge> rm_edges;
+                // for(int j=0;j<201;j++){
+                //     if(G.buckets[j].size()!=0){
+                //         for(edge& er:G.buckets[j]){
+                //             rm_edges.push_back(er);
+                //             G.remove_edge(er);
+                //         }
+                //     }
+                // }
+
+                //sliding window method 1 end
+                
+
+
+                //TODO: Removing Part by Sliding windows                   
+                cut_edge(e);//->this function can work but it will cost a lot of time to call it
+                //direct call loop to rm edge 
+                // only for remove edge is e
+                // vertices[e.v1].out_edges.pop_back();
+                // vertices[e.v2].in_edges.pop_back();
+                // e.used = 0;
+            }
+        }
+    }
+    return 0;
+}
+
+
+
+
+
