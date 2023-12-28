@@ -132,7 +132,7 @@ void DirectedGraph::MST(){
                         printf("a v1 s1 v2 s2: %d %d %d %d\n",v1,vertices[v1].set,v2,vertices[v2].set);
                     #endif
                 }else{
-                    if(e.weight>0){
+                    if(j>100){
                         //check if with this edge will have a cycle or not.
                         vertices[e.v1].out_edges.push_back(e);
                         vertices[e.v2].in_edges.push_back(e);
@@ -732,6 +732,12 @@ bool DirectedGraph::Relax(){
                                     // }
                                     topological_cycle(G);
                                     
+                                    if(G.BFS_u(edge_set_rec.edges[0].v1)){
+                                        goto giveup_cut_this_edge;
+                                        //cut edge set is not connected so put into unable because we can check other set by 'check_able_set'
+                                        // G.unable.push_back(es);
+                                    }
+                                    
                                     #if DUMP
                                         G.dump();
                                     #endif
@@ -745,7 +751,8 @@ bool DirectedGraph::Relax(){
                                         }
                                     }
                                     //result of g_able_edges has already been sorted and all of them are smaller than e.weight, larger than 0
-                                    int able_size = g_able_edges.size();
+                                    int able_size;
+                                    able_size = g_able_edges.size();
                                     if(able_size<2){
                                         // printf("able_size<2\n");
                                         goto giveup_cut_this_edge;

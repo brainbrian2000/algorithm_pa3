@@ -86,7 +86,7 @@ int main(int argc, char* argv[]){
             if(dg.topological_cycle(dg2)){
                 printf("with cycle\n");
             }else{
-                printf("dg no cycle and connected\n");
+                // printf("dg no cycle and connected\n");
             }
             dg.OutToFile(fout);
         }else{
@@ -97,7 +97,7 @@ int main(int argc, char* argv[]){
             if(ddg.topological_cycle(ddg2)){
                 printf("with cycle\n");
             }else{
-                printf("delay-dg no cycle and connected\n");
+                // printf("delay-dg no cycle and connected\n");
             }
             ddg.OutToFile(fout);
         }
