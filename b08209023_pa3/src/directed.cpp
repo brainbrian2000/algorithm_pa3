@@ -876,6 +876,7 @@ bool DirectedGraph::Relax(){
 
                                     giveup_cut_this_edge:
                                         for(edge& e:edge_set_rec.edges){
+                                            // cut_edge(e);
                                             int erindex = 0;
                                                     for(edge& er:vertices[e.v1].out_edges){
                                                         if(er.index==e.index){
@@ -893,7 +894,7 @@ bool DirectedGraph::Relax(){
                                                         erindex++;
                                                     }
                                                     unused_buckets[e.weight+100].push_back(e);
-                                        }
+                                        }    
                                         continue;
                                     giveup_time:
                                         for(edge& er:edge_set_rec.edges){
@@ -906,6 +907,15 @@ bool DirectedGraph::Relax(){
                     }
                 }
             }
+        // c_weight=0;
+        // for(vector<edge>&bucket:unused_buckets){
+        //     for(edge&e:bucket){
+        //             c_weight+=e.weight;
+        //     }
+        // }
+        // if(c_weight==-17825){
+        //     printf("Time: %f\n",(double)(check-start)/CLOCKS_PER_SEC);
+        // }
                     got_to_next_edge:
                         continue;
         }
@@ -923,7 +933,7 @@ bool DirectedGraph::Relax(){
 
     return 0;
 }
-#define CYCLE_REC_LEN 500
+#define CYCLE_REC_LEN 5000
 #define DEPTH_REC 4
 #define FACTOR 1
 
