@@ -66,44 +66,46 @@ int main(int argc, char* argv[]){
         #endif
         // dg.clear();
         dg.init_arr(fin);
-        ddg=dg;
+
+        // ddg=dg;
         dg.MST();
-        ddg.MST();
+        // ddg.MST();
         dg.Relax();
         // ddg.start=clock();
-        ddg.Relax2();
+        // ddg.Relax2();
         // dg.dump();
         // printf("check\n");
         // dg.check_connect_cycle(0);
         FILE* fout = fopen(argv[2], "w");
         // printf("dg.unused_weight: %d\n",dg.unused_weight);
         // printf("ddg.unused_weight: %d\n",ddg.unused_weight);
-        if(dg.unused_weight<ddg.unused_weight){
-        // printf("check dg\n");
-            if(dg.BFS_u(0)){
-                printf("not connected\n");
-            }
-            if(dg.topological_cycle(dg2)){
-                printf("with cycle\n");
-            }else{
-                // printf("dg no cycle and connected\n");
-            }
-            dg.OutToFile(fout);
-        }else{
-        // printf("check delay-dg\n");
-            if(ddg.BFS_u(0)){
-                printf("not connected\n");
-            }
-            if(ddg.topological_cycle(ddg2)){
-                printf("with cycle\n");
-            }else{
-                // printf("delay-dg no cycle and connected\n");
-            }
-            ddg.OutToFile(fout);
-        }
+        // if(dg.unused_weight<ddg.unused_weight){
+        // // printf("check dg\n");
+        //     if(dg.BFS_u(0)){
+        //         printf("not connected\n");
+        //     }
+        //     if(dg.topological_cycle(dg2)){
+        //         printf("with cycle\n");
+        //     }else{
+        //         // printf("dg no cycle and connected\n");
+        //     }
+        //     dg.OutToFile(fout);
+        // }else{
+        // // printf("check delay-dg\n");
+        //     if(ddg.BFS_u(0)){
+        //         printf("not connected\n");
+        //     }
+        //     if(ddg.topological_cycle(ddg2)){
+        //         printf("with cycle\n");
+        //     }else{
+        //         // printf("delay-dg no cycle and connected\n");
+        //     }
+        //     ddg.OutToFile(fout);
+        // }
         // printf("check\n");
         
         
+        dg.OutToFile(fout);
         // dg.dump();
         fclose(fout);
     }else{

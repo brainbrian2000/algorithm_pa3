@@ -598,6 +598,7 @@ bool DirectedGraph::topological_cycle(DirectedGraph &G){
                         G.buckets[e.weight+100].push_back(e);
                     }
                 }
+                G.edge_size = G.edges.size();
                 // printf("topological_cycle dump\n");
                 // G.dump();
                 // printf("topological_cycle dump end\n");
@@ -655,9 +656,10 @@ void DirectedGraph::insert_edge(edge& e){
 
 #define EarlyJump 1
 #define CutInsFunc 0
-#define TIME_LIMIT 59
+#define TIME_LIMIT 59.5
 #define using_rec 0
-
+#define SearchDeepLimitOn 0
+#define SearchDeepLimit 500
 /**
  * Relax->detect the unused edge and add it by decreasing order of weight
  * using topological_cycle to check cycle elements and return it by reference G
@@ -684,15 +686,22 @@ bool DirectedGraph::Relax(){
                         temp_buckets[oi].clear();
                         temp_buckets[oi].reserve(unused_buckets[oi].size());
                         temp_buckets[oi].assign(unused_buckets[oi].begin(),unused_buckets[oi].end());
-                        for(edge& e1:temp_buckets[oi]){
-                            for(edge& e2:temp_buckets[oj]){
+                        // for(edge& e1:temp_buckets[oi]){
+                        //     for(edge& e2:temp_buckets[oj]){
+                        for(int index_e1=0;index_e1<temp_buckets[oi].size();index_e1++){
+                            for(int index_e2=0;index_e2<temp_buckets[oj].size();index_e2++){
+                                if(oi==oj && index_e2>=index_e1){
+                                    continue;
+                                }
+                                edge& e1 = temp_buckets[oi][index_e1];
+                                edge& e2 = temp_buckets[oj][index_e2];
                                 if(e1.index==e2.index){
                                     continue;
                                 }else{
                                     edgeset edge_set_rec;
                                     vector<edge> g_able_edges;
                                     vector<edgeset> edge_sets,edge_sets_available;
-                                    edge ej,ek;
+                                    edge ej,ek,el;
                                     edge_set_rec.edges.reserve(2);
                                     // edge_set_rec.total_weight = e.weight;
                                     edge_set_rec.edges.push_back(e1);
@@ -741,6 +750,9 @@ bool DirectedGraph::Relax(){
                                     #if DUMP
                                         G.dump();
                                     #endif
+                                    
+                                    
+                                    
                                     for(int j=101;j<201;j++){
                                         if(j-100>edge_set_rec.total_weight){
                                             break;
@@ -763,7 +775,24 @@ bool DirectedGraph::Relax(){
                                     
                                     // using DP to cut impossible edges
                                     count =0;
-                                    for(int j=0;j<able_size;j++){
+
+                                    if(G.edge_size>200||edge_size>2000){
+                                        for(int j=0;j<able_size;j++){
+                                                ej = g_able_edges[j];
+                                                // printf("ej ek: %d %d\n",ej.weight,ek.weight );
+                                                if(ej.weight>edge_set_rec.total_weight){
+                                                    break;
+                                                }else{
+                                                    // count++;
+                                                    edgeset es;
+                                                    // es.edges.reserve(2);
+                                                    es.total_weight = ej.weight;
+                                                    es.edges.push_back(ej);
+                                                    edge_sets.push_back(es);
+                                                }
+                                        }
+                                    }else if(G.edge_size>100){//||edge_size>900){
+                                        for(int j=0;j<able_size;j++){
                                             ej = g_able_edges[j];
                                             // printf("ej ek: %d %d\n",ej.weight,ek.weight );
                                             if(ej.weight>edge_set_rec.total_weight){
@@ -776,7 +805,78 @@ bool DirectedGraph::Relax(){
                                                 es.edges.push_back(ej);
                                                 edge_sets.push_back(es);
                                             }
+                                        }
+                                        for(int j=0;j<able_size;j++){
+                                            ej = g_able_edges[j];
+                                            for(int k=j+1;k<able_size;k++){
+                                                ek = g_able_edges[k];
+                                                // printf("ej ek: %d %d\n",ej.weight,ek.weight );
+                                                if(ej.weight+ek.weight>edge_set_rec.total_weight){
+                                                    break;
+                                                }else{
+                                                    // count++;
+                                                    edgeset es;
+                                                    // es.edges.reserve(2);
+                                                    es.total_weight = ej.weight+ek.weight;
+                                                    es.edges.push_back(ej);
+                                                    es.edges.push_back(ek);
+                                                    edge_sets.push_back(es);
+                                                }
+                                            }
+                                        }
+                                    }else{
+                                        for(int j=0;j<able_size;j++){
+                                            ej = g_able_edges[j];
+                                                if(ej.weight>edge_set_rec.total_weight){
+                                                    break;
+                                                }else{
+                                                    edgeset es;
+                                                    es.total_weight = ej.weight;
+                                                    es.edges.push_back(ej);
+                                                    edge_sets.push_back(es);
+                                                }
+                                            }
+                                        for(int j=0;j<able_size;j++){
+                                            ej = g_able_edges[j];
+                                            for(int k=j+1;k<able_size;k++){
+                                                ek = g_able_edges[k];
+                                                if(ej.weight+ek.weight>edge_set_rec.total_weight){
+                                                    break;
+                                                }else{
+                                                    edgeset es;
+                                                    es.total_weight = ej.weight+ek.weight;
+                                                    es.edges.push_back(ej);
+                                                    es.edges.push_back(ek);
+                                                    edge_sets.push_back(es);
+                                                }
+                                            }
+                                        }
+                                        for(int j=0;j<able_size;j++){
+                                            ej = g_able_edges[j];
+                                            for(int k=j+1;k<able_size;k++){
+                                                ek = g_able_edges[k];
+                                                for(int l=k+1;l<able_size;l++){
+                                                    el = g_able_edges[l];
+                                                    if(el.weight+ej.weight+ek.weight>edge_set_rec.total_weight){
+                                                        break;
+                                                    }else{
+                                                        // count++;
+                                                        edgeset es;
+                                                        // es.edges.reserve(2);
+                                                        es.total_weight = ej.weight+ek.weight;
+                                                        es.edges.push_back(ej);
+                                                        es.edges.push_back(ek);
+                                                        es.edges.push_back(el);
+                                                        edge_sets.push_back(es);
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
+
+
+
+                                    
                                     if(edge_sets.size()==0){
                                         goto giveup_cut_this_edge;
                                     }
@@ -785,13 +885,21 @@ bool DirectedGraph::Relax(){
                                     // for(int j=0;j<edge_sets.size();j++){
                                         // edgeset& es = edge_sets[j];
                                     check = clock();
-                                    if((double)(check-start)>CLOCKS_PER_SEC*TIME_LIMIT){
+                                    if((check-start)>CLOCKS_PER_SEC*TIME_LIMIT){
                                         goto giveup_time;
                                     }
-
-
+                                    #if SearchDeepLimitOn
+                                        int SearchLim;
+                                        SearchLim =0;
+                                    #endif
                                     for(edgeset &es:edge_sets){
-                                        
+                                        #if SearchDeepLimitOn
+                                            if(SearchLim>SearchDeepLimit){
+                                                goto giveup_cut_this_edge;
+                                            }else{
+                                                SearchLim++;
+                                            }
+                                        #endif    
                                         for(edge& e:es.edges){
                                             #if CutInsFunc
                                                 G.cut_edge(e);
@@ -981,7 +1089,7 @@ bool DirectedGraph::Relax(){
 bool DirectedGraph::Relax2(){
     // printf("DelayJump CutInsFunc TIME_LIMIT %d %d %d :\n",!EarlyJump,CutInsFunc,TIME_LIMIT);
     check = clock();
-    if((double)(check-start)>CLOCKS_PER_SEC*TIME_LIMIT){
+    if((check-start)>CLOCKS_PER_SEC*TIME_LIMIT){
         return 0;
     }
     //1->sliding window method
@@ -1002,8 +1110,15 @@ bool DirectedGraph::Relax2(){
                         temp_buckets[oi].clear();
                         temp_buckets[oi].reserve(unused_buckets[oi].size());
                         temp_buckets[oi].assign(unused_buckets[oi].begin(),unused_buckets[oi].end());
-                        for(edge& e1:temp_buckets[oi]){
-                            for(edge& e2:temp_buckets[oj]){
+                        // for(edge& e1:temp_buckets[oi]){
+                        //     for(edge& e2:temp_buckets[oj]){
+                        for(int index_e1=0;index_e1<temp_buckets[oi].size();index_e1++){
+                            for(int index_e2=0;index_e2<temp_buckets[oj].size();index_e2++){
+                                if(oi==oj && index_e2>=index_e1){
+                                    continue;
+                                }
+                                edge& e1 = temp_buckets[oi][index_e1];
+                                edge& e2 = temp_buckets[oj][index_e2];
                                 if(e1.index==e2.index){
                                     continue;
                                 }else{
@@ -1049,7 +1164,11 @@ bool DirectedGraph::Relax2(){
                                     // for(edge&e : edge_set_rec.edges){
                                     // }
                                     topological_cycle(G);
-                                    
+                                    if(G.BFS_u(edge_set_rec.edges[0].v1)){
+                                        goto giveup_cut_this_edge;
+                                        //cut edge set is not connected so put into unable because we can check other set by 'check_able_set'
+                                        // G.unable.push_back(es);
+                                    }
                                     #if DUMP
                                         G.dump();
                                     #endif
@@ -1063,7 +1182,8 @@ bool DirectedGraph::Relax2(){
                                         }
                                     }
                                     //result of g_able_edges has already been sorted and all of them are smaller than e.weight, larger than 0
-                                    int able_size = g_able_edges.size();
+                                    int able_size;
+                                    able_size = g_able_edges.size();
                                     if(able_size<2){
                                         // printf("able_size<2\n");
                                         goto giveup_cut_this_edge;
@@ -1088,6 +1208,24 @@ bool DirectedGraph::Relax2(){
                                                 edge_sets.push_back(es);
                                             }
                                     }
+                                    for(int j=0;j<able_size;j++){
+                                        ej = g_able_edges[j];
+                                        for(int k=j+1;k<able_size;k++){
+                                            ek = g_able_edges[k];
+                                            // printf("ej ek: %d %d\n",ej.weight,ek.weight );
+                                            if(ej.weight+ek.weight>edge_set_rec.total_weight){
+                                                break;
+                                            }else{
+                                                // count++;
+                                                edgeset es;
+                                                // es.edges.reserve(2);
+                                                es.total_weight = ej.weight+ek.weight;
+                                                es.edges.push_back(ej);
+                                                es.edges.push_back(ek);
+                                                edge_sets.push_back(es);
+                                            }
+                                        }
+                                    }
                                     if(edge_sets.size()==0){
                                         goto giveup_cut_this_edge;
                                     }
@@ -1096,7 +1234,7 @@ bool DirectedGraph::Relax2(){
                                     // for(int j=0;j<edge_sets.size();j++){
                                         // edgeset& es = edge_sets[j];
                                     check = clock();
-                                    if((double)(check-start)>CLOCKS_PER_SEC*TIME_LIMIT){
+                                    if((check-start)>CLOCKS_PER_SEC*TIME_LIMIT){
                                         goto giveup_time;
                                     }
 
@@ -1258,14 +1396,14 @@ bool DirectedGraph::Relax2(){
                                 }
                             }
                         }
-                    #if !EarlyJump
+                    #if EarlyJump
                     got_to_next_edge:
                         continue;
                     #endif
                     }
                 }
             }
-            #if EarlyJump
+            #if !EarlyJump
             got_to_next_edge:
                 continue;
             #endif
@@ -1300,7 +1438,7 @@ bool DirectedGraph::Relax_rec(int depth,vector<edgeset> &unable_edges,edgeset& e
     }else if(depth>=DEPTH_REC){
         return 0;
     }
-    if((double)(check-start)/CLOCKS_PER_SEC>53){
+    if((check-start)/CLOCKS_PER_SEC>53){
         // printf("time out\n");
         return 0;
     }
@@ -1356,7 +1494,7 @@ bool DirectedGraph::Relax_rec(int depth,vector<edgeset> &unable_edges,edgeset& e
     sort(new_edge_sets.begin(),new_edge_sets.end());
     
     for(int j=0;j<new_edge_sets.size();j++){
-        if((double)(check-start)>CLOCKS_PER_SEC*TIME_LIMIT){
+        if((check-start)>CLOCKS_PER_SEC*TIME_LIMIT){
             // printf("time out\n");
             return 0;
         }
@@ -1398,7 +1536,7 @@ bool DirectedGraph::Relax_rec(int depth,vector<edgeset> &unable_edges,edgeset& e
         }
     }
     check = clock();
-    if((double)(check - start) > CLOCKS_PER_SEC*TIME_LIMIT){
+    if((check - start) > CLOCKS_PER_SEC*TIME_LIMIT){
         // printf("time out\n");
         return 0;
     }
