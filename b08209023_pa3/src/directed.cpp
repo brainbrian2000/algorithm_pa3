@@ -11,7 +11,7 @@
 #define DEBUG 0
 #include <time.h>
 #define timer 0
-#define TIME_LIMIT 55
+#define TIME_LIMIT 59
 using namespace std;
 // using namespace UndirectedGraph
 DirectedGraph::DirectedGraph(){
@@ -755,7 +755,7 @@ bool DirectedGraph::Relax(){
                                     for(int j=0;j<able_size;j++){
                                             ej = g_able_edges[j];
                                             // printf("ej ek: %d %d\n",ej.weight,ek.weight );
-                                            if(ej.weight>=edge_set_rec.total_weight){
+                                            if(ej.weight>edge_set_rec.total_weight){
                                                 break;
                                             }else{
                                                 // count++;
@@ -777,6 +777,8 @@ bool DirectedGraph::Relax(){
                                     if((double)(check-start)>CLOCKS_PER_SEC*TIME_LIMIT){
                                         goto giveup_time;
                                     }
+
+
                                     for(edgeset &es:edge_sets){
                                         
                                         for(edge& e:es.edges){
@@ -907,15 +909,6 @@ bool DirectedGraph::Relax(){
                     }
                 }
             }
-        // c_weight=0;
-        // for(vector<edge>&bucket:unused_buckets){
-        //     for(edge&e:bucket){
-        //             c_weight+=e.weight;
-        //     }
-        // }
-        // if(c_weight==-17825){
-        //     printf("Time: %f\n",(double)(check-start)/CLOCKS_PER_SEC);
-        // }
                     got_to_next_edge:
                         continue;
         }
