@@ -660,6 +660,7 @@ void DirectedGraph::insert_edge(edge& e){
 #define using_rec 0
 #define SearchDeepLimitOn 1
 #define SearchDeepLimit 10000
+#define jumpback 0
 /**
  * Relax->detect the unused edge and add it by decreasing order of weight
  * using topological_cycle to check cycle elements and return it by reference G
@@ -678,6 +679,7 @@ bool DirectedGraph::Relax(){
         for(int oi=200;oi>=101;oi--){
             if(unused_buckets[oi].size()!=0){
                 for (int oj=oi;oj>=101;oj--){
+                    jumpbackpoint:
                     if(unused_buckets[oj].size()!=0){
                         // printf("oi oj: %d %d\n",oi,oj);
                         temp_buckets[oj].clear();
@@ -1055,8 +1057,12 @@ bool DirectedGraph::Relax(){
                                 }
                             }
                         }
+                    continue;    
                     #if EarlyJump
                     got_to_next_edge:
+                        #if jumpback
+                            goto jumpbackpoint;
+                        #endif
                         continue;
                     #endif
                     }
