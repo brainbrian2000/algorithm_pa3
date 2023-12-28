@@ -43,12 +43,14 @@ int main(int argc, char* argv[]){
     #if DEBUG
         printf("Graph type: %s", gtype);
     #endif
+    UndirectedGraph ug;
+    DirectedGraph dg;
+    DirectedGraph dg2;
     // if(strcmp(gtype,"u\n")==0){
     if(gtype[0]=='u'){
         #if DEBUG
             printf("undirected\n");
         #endif
-        UndirectedGraph ug;
         ug.init_arr(fin);
         ug.sort_edges();
         FILE* fout = fopen(argv[2], "w");
@@ -60,7 +62,6 @@ int main(int argc, char* argv[]){
         #if DEBUG
             printf("directed\n");
         #endif
-        DirectedGraph dg;
         // dg.clear();
         dg.start = clock();
         dg.init_arr(fin);
@@ -69,7 +70,6 @@ int main(int argc, char* argv[]){
         // dg.dump();
         dg.Relax();
         // printf("check\n");
-        DirectedGraph dg2;
         // dg.check_connect_cycle(0);
         if(dg.BFS_u(0)){
             printf("not connected\n");
@@ -86,7 +86,6 @@ int main(int argc, char* argv[]){
         dg.OutToFile(fout);
         fclose(fout);
         dg.check=clock();
-        printf("Time cost %lf\n",(double)(dg.check-dg.start)/CLOCKS_PER_SEC);
     }else{
         #if DEBUG
             printf("not expected input type\n");
@@ -95,6 +94,7 @@ int main(int argc, char* argv[]){
         return 0;
     }
     fclose(fin);
+    printf("Time cost %lf\n",(double)(dg.check-dg.start)/CLOCKS_PER_SEC);
     
     
     return 0;

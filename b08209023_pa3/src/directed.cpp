@@ -773,11 +773,11 @@ bool DirectedGraph::Relax(){
                                     sort(edge_sets.begin(),edge_sets.end());
                                     // for(int j=0;j<edge_sets.size();j++){
                                         // edgeset& es = edge_sets[j];
+                                    check = clock();
+                                    if((double)(check-start)>CLOCKS_PER_SEC*TIME_LIMIT){
+                                        goto giveup_time;
+                                    }
                                     for(edgeset &es:edge_sets){
-                                        check = clock();
-                                        if((double)(check-start)/CLOCKS_PER_SEC>TIME_LIMIT){
-                                            goto giveup_time;
-                                        }
                                         
                                         for(edge& e:es.edges){
                                             // G.cut_edge(e);
@@ -875,8 +875,24 @@ bool DirectedGraph::Relax(){
                                     #endif
 
                                     giveup_cut_this_edge:
-                                        for(edge& er:edge_set_rec.edges){
-                                            cut_edge(er);
+                                        for(edge& e:edge_set_rec.edges){
+                                            int erindex = 0;
+                                                    for(edge& er:vertices[e.v1].out_edges){
+                                                        if(er.index==e.index){
+                                                            vertices[e.v1].out_edges.erase(vertices[e.v1].out_edges.begin()+erindex);
+                                                            break;
+                                                        }
+                                                        erindex++;
+                                                    }
+                                                    erindex = 0;
+                                                    for(edge &er:vertices[e.v2].in_edges){
+                                                        if(er.index==e.index){
+                                                            vertices[e.v2].in_edges.erase(vertices[e.v2].in_edges.begin()+erindex);
+                                                            break;
+                                                        }
+                                                        erindex++;
+                                                    }
+                                                    unused_buckets[e.weight+100].push_back(e);
                                         }
                                         continue;
                                     giveup_time:
@@ -978,7 +994,7 @@ bool DirectedGraph::Relax_rec(int depth,vector<edgeset> &unable_edges,edgeset& e
     sort(new_edge_sets.begin(),new_edge_sets.end());
     
     for(int j=0;j<new_edge_sets.size();j++){
-        if((double)(check-start)/CLOCKS_PER_SEC>TIME_LIMIT){
+        if((double)(check-start)>CLOCKS_PER_SEC*TIME_LIMIT){
             // printf("time out\n");
             return 0;
         }
@@ -1020,7 +1036,7 @@ bool DirectedGraph::Relax_rec(int depth,vector<edgeset> &unable_edges,edgeset& e
         }
     }
     check = clock();
-    if((double)(check - start) / CLOCKS_PER_SEC>TIME_LIMIT){
+    if((double)(check - start) > CLOCKS_PER_SEC*TIME_LIMIT){
         // printf("time out\n");
         return 0;
     }
