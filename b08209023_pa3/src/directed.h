@@ -27,19 +27,14 @@ class DirectedGraph{
         void clear();
         bool BFS_d(int v_start);//return for cycle exist or not from v_start
         bool BFS_u(int v_start);//return for every vertex is connected or not
-        bool DFS_d(int v_start);
-        bool DFS_u(int v_start);
         bool check_connect_cycle(int index);
         bool Relax();
-        bool Relax_core();
         bool Relax_rec(int depth,vector<edgeset> &unable_edges,edgeset& e,DirectedGraph &G,vector<edgeset> &edge_sets,vector<edge> &g_able_edges);
         bool topological_cycle(DirectedGraph &G);
         int faster=0,slower=0;
         void dump();
         void cut_edge(edge& e);
         void insert_edge(edge& e);
-        void add_edge(edge& e);
-        void remove_edge(edge& e);
 };
 
 

@@ -11,6 +11,7 @@
 #define DEBUG 0
 #include <time.h>
 #define timer 0
+#define TIME_LIMIT 55
 using namespace std;
 // using namespace UndirectedGraph
 DirectedGraph::DirectedGraph(){
@@ -21,7 +22,10 @@ DirectedGraph::DirectedGraph(){
     sets.clear();
     for(int i=0;i<201;i++){
         buckets[i].clear();
+        // buckets[i].reserve(200);
         unused_buckets[i].clear();
+        // unused_buckets[i].reserve(200);
+
     }
 }
 
@@ -216,7 +220,9 @@ void DirectedGraph::clear(){
     unable.clear();
     for(int i=0;i<201;i++){
         buckets[i].clear();
+        // buckets[i].reserve(200);
         unused_buckets[i].clear();
+        // unused_buckets[i].reserve(200);
         temp_buckets[i].clear();
     }
     return ;
@@ -410,6 +416,7 @@ bool DirectedGraph::BFS_u(int v_start){
 /**
  * return 1 if there find a cycle from v_start or have isolated vertex
  * return 0 if every vertex is connected and without cycle
+ * for only single cut edge can work->need using topological_cycle to check
 */
 bool DirectedGraph::check_connect_cycle(int index){
     queue<int> source,not_source,sink;
@@ -522,6 +529,11 @@ bool DirectedGraph::topological_cycle(DirectedGraph &G){
     }
     //cocktile
     while(!not_source_sink.empty()){
+        check = clock();
+        // if((double)(check-start)/CLOCKS_PER_SEC>TIME_LIMIT){
+        //     printf("time out\n");
+        //     return 1;
+        // }
         //cut edges
         while(!source.empty()){
             int v = source.front();
@@ -603,20 +615,7 @@ bool DirectedGraph::topological_cycle(DirectedGraph &G){
  * Edge state change from used to not used
 */
 void DirectedGraph::cut_edge(edge& e){
-    // printf("remove edge %d %d %d %d\n",e.v1,e.v2,e.weight,e.index);
-    // dump();
     int erindex = 0;
-    // int ev1,ev2;
-    // for(ev1=0;ev1<vertices.size();ev1++){
-    //     if(vertices[ev1].id==e.v1){
-    //         break;
-    //     }
-    // }
-    // for(ev2=0;ev2<vertices.size();ev2++){
-    //     if(vertices[ev2].id==e.v2){
-    //         break;
-    //     }
-    // }
     for(edge& er:vertices[e.v1].out_edges){
         if(er.index==e.index){
             vertices[e.v1].out_edges.erase(vertices[e.v1].out_edges.begin()+erindex);
@@ -632,12 +631,6 @@ void DirectedGraph::cut_edge(edge& e){
         }
         erindex++;
     }
-    // for(int i=0;i<buckets[e.weight+100].size();i++){
-    //     if(buckets[e.weight+100][i].index==e.index){
-    //         buckets[e.weight+100].erase(buckets[e.weight+100].begin()+i);
-    //         break;
-    //     }
-    // }
     unused_buckets[e.weight+100].push_back(e);
 
     return ;
@@ -648,19 +641,6 @@ void DirectedGraph::cut_edge(edge& e){
  * Edge state change from not used to used
 */
 void DirectedGraph::insert_edge(edge& e){
-    // printf("add edge %d %d %d %d\n",e.v1,e.v2,e.weight,e.index);
-    int erindex = 0;
-    // int ev1,ev2;
-    // for(ev1=0;ev1<vertices.size();ev1++){
-    //     if(vertices[ev1].id==e.v1){
-    //         break;
-    //     }
-    // }
-    // for(ev2=0;ev2<vertices.size();ev2++){
-    //     if(vertices[ev2].id==e.v2){
-    //         break;
-    //     }
-    // }
     vertices[e.v1].out_edges.push_back(e);
     vertices[e.v2].in_edges.push_back(e);
     for(int i=0;i<unused_buckets[e.weight+100].size();i++){
@@ -685,183 +665,251 @@ void DirectedGraph::insert_edge(edge& e){
 */
 bool DirectedGraph::Relax(){
     //1->sliding window method
-    check = clock();
-    if((double)(check-start)/CLOCKS_PER_SEC>50){
-        printf("time out\n");
-        return 0;
-    }
     DirectedGraph G;
     int count=0;
-    for(int oi=200;oi>=101;oi--){
-        if(unused_buckets[oi].size()!=0){
-            for (int oj=oi;oj>=101;oj--){
-                if(unused_buckets[oj].size()!=0){
-                    temp_buckets[oj].clear();
-                    temp_buckets[oj].reserve(unused_buckets[oj].size());
-                    temp_buckets[oj].assign(unused_buckets[oj].begin(),unused_buckets[oj].end());
-                    temp_buckets[oi].clear();
-                    temp_buckets[oi].reserve(unused_buckets[oi].size());
-                    temp_buckets[oi].assign(unused_buckets[oi].begin(),unused_buckets[oi].end());
-                    for(edge& e1:temp_buckets[oi]){
-                        for(edge& e2:temp_buckets[oj]){
-                            if((double)(check-start)/CLOCKS_PER_SEC>55){
-                                printf("time out\n");
-                                return 0;
-                            }
-                            if(e1.index==e2.index){
-                                continue;
-                            }else{
-                                edgeset edge_set_rec;
-                                edge_set_rec.edges.reserve(2);
-                                // edge_set_rec.total_weight = e.weight;
-                                edge_set_rec.edges.push_back(e1);
-                                edge_set_rec.edges.push_back(e2);
-                                for(edge&e : edge_set_rec.edges){
-                                    edge_set_rec.total_weight+=e.weight;
-                                    // printf("e.v1 e.v2 e.weight: %d %d %d\n",e.v1,e.v2,e.weight);
-                                }
-                                // edge_set_rec.total_weight = e1.weight;
-                                //find the big edge and using it add into graph(mother graph)
-                                //because we using MST method so MST it again is useless
-                                //using "append this edge and check the cycle" method
-                                for(edge&e : edge_set_rec.edges){
-                                    insert_edge(e);
-                                }
-                                
-                                topological_cycle(G);
-                                #if DUMP
-                                    G.dump();
-                                #endif
-                                vector<edge> g_able_edges;
-                                for(int j=101;j<201;j++){
-                                    if(j-100>edge_set_rec.total_weight){
-                                        break;
-                                    }else if(G.buckets[j].size()!=0){
-                                        for(edge& er:G.buckets[j]){
-                                            g_able_edges.push_back(er);
+    bool state_restart;
+    int prev_weight=0,c_weight=1;
+    while(prev_weight != c_weight){
+        prev_weight = c_weight;
+        for(int oi=200;oi>=101;oi--){
+            if(unused_buckets[oi].size()!=0){
+                for (int oj=oi;oj>=101;oj--){
+                    if(unused_buckets[oj].size()!=0){
+                        // printf("oi oj: %d %d\n",oi,oj);
+                        temp_buckets[oj].clear();
+                        temp_buckets[oj].reserve(unused_buckets[oj].size());
+                        temp_buckets[oj].assign(unused_buckets[oj].begin(),unused_buckets[oj].end());
+                        temp_buckets[oi].clear();
+                        temp_buckets[oi].reserve(unused_buckets[oi].size());
+                        temp_buckets[oi].assign(unused_buckets[oi].begin(),unused_buckets[oi].end());
+                        for(edge& e1:temp_buckets[oi]){
+                            for(edge& e2:temp_buckets[oj]){
+                                if(e1.index==e2.index){
+                                    continue;
+                                }else{
+                                    edgeset edge_set_rec;
+                                    vector<edge> g_able_edges;
+                                    vector<edgeset> edge_sets,edge_sets_available;
+                                    edge ej,ek;
+                                    edge_set_rec.edges.reserve(2);
+                                    // edge_set_rec.total_weight = e.weight;
+                                    edge_set_rec.edges.push_back(e1);
+                                    edge_set_rec.edges.push_back(e2);
+                                    // for(edge&e : edge_set_rec.edges){
+                                    //     edge_set_rec.total_weight+=e.weight;
+                                    //     insert_edge(e);
+                                    // }
+                                    edge_set_rec.total_weight= e1.weight+e2.weight;
+                                    // insert_edge(e1);
+                                    // insert_edge(e2);
+                                    vertices[e1.v1].out_edges.push_back(e1);
+                                    vertices[e1.v2].in_edges.push_back(e1);
+                                    for(int i=0;i<unused_buckets[e1.weight+100].size();i++){
+                                        if(unused_buckets[e1.weight+100][i].index==e1.index){
+                                            unused_buckets[e1.weight+100].erase(unused_buckets[e1.weight+100].begin()+i);
+                                            break;
                                         }
                                     }
-                                }
-                                //result of g_able_edges has already been sorted and all of them are smaller than e.weight, larger than 0
-                                vector<edgeset> edge_sets,edge_sets_available;
-                                edge ej,ek;
-                                int able_size = g_able_edges.size();
-                                if(able_size<2){
-                                    // printf("able_size<2\n");
-                                    goto giveup_cut_this_edge;
-                                }
-                                edge_sets.reserve(able_size*(able_size-1)/8);
-                                edge_sets_available.reserve(able_size*(able_size-1)/8);
-                                unable.reserve(edge_sets.size()/10);
-                                
-                                // using DP to cut impossible edges
-                                count =0;
-                                for(int j=0;j<able_size;j++){
-                                        ej = g_able_edges[j];
-                                        // printf("ej ek: %d %d\n",ej.weight,ek.weight );
-                                        if(ej.weight>=edge_set_rec.total_weight){
+                                    vertices[e2.v1].out_edges.push_back(e2);
+                                    vertices[e2.v2].in_edges.push_back(e2);
+                                    for(int i=0;i<unused_buckets[e2.weight+100].size();i++){
+                                        if(unused_buckets[e2.weight+100][i].index==e2.index){
+                                            unused_buckets[e2.weight+100].erase(unused_buckets[e2.weight+100].begin()+i);
                                             break;
-                                        }else{
-                                            // count++;
-                                            edgeset es;
-                                            es.edges.reserve(2);
-                                            es.total_weight = ej.weight;
-                                            es.edges.push_back(ej);
-                                            edge_sets.push_back(es);
                                         }
-                                }
-                                if(edge_sets.size()==0){
-                                    goto giveup_cut_this_edge;
-                                }
+                                    }
 
-                                sort(edge_sets.begin(),edge_sets.end());
-                                
-                                for(int j=0;j<edge_sets.size();j++){
-                                    edgeset& es = edge_sets[j];
+                                        // printf("e.v1 e.v2 e.weight: %d %d %d\n",e.v1,e.v2,e.weight);
+                                    // edge_set_rec.total_weight = e1.weight;
+                                    //find the big edge and using it add into graph(mother graph)
+                                    //because we using MST method so MST it again is useless
+                                    //using "append this edge and check the cycle" method
+                                    // for(edge&e : edge_set_rec.edges){
+                                    // }
+                                    topological_cycle(G);
                                     
-                                    for(edge& er:es.edges){
+                                    #if DUMP
+                                        G.dump();
+                                    #endif
+                                    for(int j=101;j<201;j++){
+                                        if(j-100>edge_set_rec.total_weight){
+                                            break;
+                                        }else if(G.buckets[j].size()!=0){
+                                            for(edge& er:G.buckets[j]){
+                                                g_able_edges.push_back(er);
+                                            }
+                                        }
+                                    }
+                                    //result of g_able_edges has already been sorted and all of them are smaller than e.weight, larger than 0
+                                    int able_size = g_able_edges.size();
+                                    if(able_size<2){
+                                        // printf("able_size<2\n");
+                                        goto giveup_cut_this_edge;
+                                    }
+                                    edge_sets.reserve(able_size*(able_size-1));
+                                    edge_sets_available.reserve(able_size*(able_size-1));
+                                    // unable.reserve(edge_sets.size());
+                                    
+                                    // using DP to cut impossible edges
+                                    count =0;
+                                    for(int j=0;j<able_size;j++){
+                                            ej = g_able_edges[j];
+                                            // printf("ej ek: %d %d\n",ej.weight,ek.weight );
+                                            if(ej.weight>=edge_set_rec.total_weight){
+                                                break;
+                                            }else{
+                                                // count++;
+                                                edgeset es;
+                                                // es.edges.reserve(2);
+                                                es.total_weight = ej.weight;
+                                                es.edges.push_back(ej);
+                                                edge_sets.push_back(es);
+                                            }
+                                    }
+                                    if(edge_sets.size()==0){
+                                        goto giveup_cut_this_edge;
+                                    }
 
-                                        G.cut_edge(er);
+                                    sort(edge_sets.begin(),edge_sets.end());
+                                    // for(int j=0;j<edge_sets.size();j++){
+                                        // edgeset& es = edge_sets[j];
+                                    for(edgeset &es:edge_sets){
+                                        check = clock();
+                                        if((double)(check-start)/CLOCKS_PER_SEC>TIME_LIMIT){
+                                            goto giveup_time;
+                                        }
+                                        
+                                        for(edge& e:es.edges){
+                                            // G.cut_edge(e);
+                                            int erindex = 0;
+                                            for(edge& er:G.vertices[e.v1].out_edges){
+                                                if(er.index==e.index){
+                                                    G.vertices[e.v1].out_edges.erase(G.vertices[e.v1].out_edges.begin()+erindex);
+                                                    break;
+                                                }
+                                                erindex++;
+                                            }
+                                            erindex = 0;
+                                            for(edge &er:G.vertices[e.v2].in_edges){
+                                                if(er.index==e.index){
+                                                    G.vertices[e.v2].in_edges.erase(G.vertices[e.v2].in_edges.begin()+erindex);
+                                                    break;
+                                                }
+                                                erindex++;
+                                            }
+                                            G.unused_buckets[e.weight+100].push_back(e);
+                                        }
+                                        #if 1
+                                        if(G.BFS_u(edge_set_rec.edges[0].v1)){
+                                            //cut edge set is not connected so put into unable because we can check other set by 'check_able_set'
+                                            // G.unable.push_back(es);
+                                        }else{
+                                            DirectedGraph temp;
+                                            bool state=0;
+                                            for(edge& er: edge_set_rec.edges){
+                                                if(G.BFS_d(er.v1)){
+                                                    state=1;
+                                                    break;
+                                                }
+                                            }
+                                            // if(!G.BFS_d(edge_set_rec.edges[0].v1)){
+                                            if(!state){
+                                                //cut edge set is connected and without cycle
+                                                // printf("find good set in Relax\n");
+                                                // printf("[DUMP OF MOTHER]\n");
+                                                // dump();                                            
+                                                // printf("[DUMP OF MOTHER END]\n");
+                                                // for(edge& er:edge_set_rec.edges){
+                                                //     insert_edge(er);
+                                                // }
+                                                for(edge& e:es.edges){
+                                                    // cut_edge(er);
+                                                    int erindex = 0;
+                                                    for(edge& er:vertices[e.v1].out_edges){
+                                                        if(er.index==e.index){
+                                                            vertices[e.v1].out_edges.erase(vertices[e.v1].out_edges.begin()+erindex);
+                                                            break;
+                                                        }
+                                                        erindex++;
+                                                    }
+                                                    erindex = 0;
+                                                    for(edge &er:vertices[e.v2].in_edges){
+                                                        if(er.index==e.index){
+                                                            vertices[e.v2].in_edges.erase(vertices[e.v2].in_edges.begin()+erindex);
+                                                            break;
+                                                        }
+                                                        erindex++;
+                                                    }
+                                                    unused_buckets[e.weight+100].push_back(e);
+                                                }
+                                             
+                                                // printf("[DUMP OF MOTHER AFTER]\n");
+                                                // dump();                                            
+                                                // printf("[DUMP OF MOTHER AFTER END]\n\n");
+
+                                                goto got_to_next_edge;
+                                                //do cut in big graph
+                                            }else{
+                                                edge_sets_available.push_back(es);
+                                            }
+                                        }
+                                        #endif
+                                        for(edge& e1:es.edges){
+                                            // G.insert_edge(ed);
+                                            G.vertices[e1.v1].out_edges.push_back(e1);
+                                            G.vertices[e1.v2].in_edges.push_back(e1);
+                                            for(int i=0;i<G.unused_buckets[e1.weight+100].size();i++){
+                                                if(G.unused_buckets[e1.weight+100][i].index==e1.index){
+                                                    G.unused_buckets[e1.weight+100].erase(G.unused_buckets[e1.weight+100].begin()+i);
+                                                    break;
+                                                }
+                                            }
+                                        }
+
                                     }
                                     #if 1
-                                    if(G.BFS_u(edge_set_rec.edges[0].v1)){
-                                        //cut edge set is not connected so put into unable because we can check other set by 'check_able_set'
-                                        G.unable.push_back(es);
-                                    }else{
-                                        DirectedGraph temp;
-                                        // if(!G.topological_cycle(temp)){
-                                        bool state=0;
-                                        for(edge& er: edge_set_rec.edges){
-                                            if(G.BFS_d(er.v1)){
-                                                state=1;
-                                                break;
-                                            }
-                                        }
-                                        // if(!G.BFS_d(edge_set_rec.edges[0].v1)){
-                                        if(!state){
-                                            //cut edge set is connected and without cycle
-                                            // printf("find good set in Relax\n");
-                                            // printf("[DUMP OF MOTHER]\n");
-                                            // dump();                                            
-                                            // printf("[DUMP OF MOTHER END]\n");
-                                            // for(edge& er:edge_set_rec.edges){
-                                            //     insert_edge(er);
-                                            // }
-                                            for(edge& er:es.edges){
-                                                cut_edge(er);
-                                            }
-                                            // printf("[DUMP OF MOTHER AFTER]\n");
-                                            // dump();                                            
-                                            // printf("[DUMP OF MOTHER AFTER END]\n\n");
-
-                                            goto got_to_next_edge;
-                                            //do cut in big graph
-                                        }else{
-                                            edge_sets_available.push_back(es);
-                                        }
-                                    }
+                                    // printf("edge_sets_available.size(): %ld\n",edge_sets_available.size());
+                                    // if(Relax_rec(2,unable,edge_set_rec,G,edge_sets_available,g_able_edges)){
+                                    //     goto got_to_next_edge;
+                                    // }
                                     #endif
-                                    for(edge& ed:es.edges){
-                                        G.insert_edge(ed);
-                                    }
 
+                                    giveup_cut_this_edge:
+                                        for(edge& er:edge_set_rec.edges){
+                                            cut_edge(er);
+                                        }
+                                        continue;
+                                    giveup_time:
+                                        for(edge& er:edge_set_rec.edges){
+                                            cut_edge(er);
+                                        }
+                                        return 0;
                                 }
-                                #if 1
-                                // printf("edge_sets_available.size(): %ld\n",edge_sets_available.size());
-                                if(Relax_rec(2,unable,edge_set_rec,G,edge_sets_available,g_able_edges)){
-                                    goto got_to_next_edge;
-                                }
-                                #endif
-
-                                //sliding window method 2 end
-                                // printf("G.unable.size(): %ld\n",G.unable.size());
-                                //TODO: Removing Part by Sliding windows                   
-                                giveup_cut_this_edge:
-                                    for(edge& er:edge_set_rec.edges){
-                                        cut_edge(er);
-                                    // cut_edge(e);//->this function can work but it will cost a lot of time to call it
-                                    }
-                                    continue;
-
-
-                                    // printf("got_to_next_edge\n");
-                                //direct call loop to rm edge 
-                                // only for remove edge is e
-                                // vertices[e.v1].out_edges.pop_back();
-                                // vertices[e.v2].in_edges.pop_back();
-                                // e.used = 0;
                             }
                         }
                     }
-                    got_to_next_edge:
-                        continue;
                 }
             }
+                    got_to_next_edge:
+                        continue;
         }
+        c_weight=0;
+        for(vector<edge>&bucket:unused_buckets){
+            for(edge&e:bucket){
+                    c_weight+=e.weight;
+            }
+        }
+
+
     }
+
+    // printf("%d %d \n",prev_weight,c_weight);
+
     return 0;
 }
-
+#define CYCLE_REC_LEN 500
+#define DEPTH_REC 4
+#define FACTOR 1
 
 
 /**
@@ -871,11 +919,11 @@ bool DirectedGraph::Relax(){
 bool DirectedGraph::Relax_rec(int depth,vector<edgeset> &unable_edges,edgeset& e,DirectedGraph &G,vector<edgeset>&edge_sets,vector<edge> &g_able_edges){
     if(edge_sets.size()==0){
         return 0;
-    }else if(depth>=4){
+    }else if(depth>=DEPTH_REC){
         return 0;
     }
     if((double)(check-start)/CLOCKS_PER_SEC>53){
-        printf("time out\n");
+        // printf("time out\n");
         return 0;
     }
     edge ej;
@@ -899,7 +947,7 @@ bool DirectedGraph::Relax_rec(int depth,vector<edgeset> &unable_edges,edgeset& e
                 }
                 es.edges.push_back(ej);
                 for(edgeset&er:unable_edges){
-                    if(er.total_weight>es.total_weight){
+                    if(er.total_weight>es.total_weight*FACTOR){
                         break;
                     }
                     else{
@@ -922,7 +970,7 @@ bool DirectedGraph::Relax_rec(int depth,vector<edgeset> &unable_edges,edgeset& e
         
         }
     }
-    if(new_edge_sets.size()>300){
+    if(new_edge_sets.size()>CYCLE_REC_LEN){
         // printf("edges_sets.size()==0\n");
         return 0;
     }
@@ -930,8 +978,8 @@ bool DirectedGraph::Relax_rec(int depth,vector<edgeset> &unable_edges,edgeset& e
     sort(new_edge_sets.begin(),new_edge_sets.end());
     
     for(int j=0;j<new_edge_sets.size();j++){
-        if((double)(check-start)/CLOCKS_PER_SEC>55){
-            printf("time out\n");
+        if((double)(check-start)/CLOCKS_PER_SEC>TIME_LIMIT){
+            // printf("time out\n");
             return 0;
         }
         edgeset& es = new_edge_sets[j];
@@ -954,7 +1002,7 @@ bool DirectedGraph::Relax_rec(int depth,vector<edgeset> &unable_edges,edgeset& e
             // if(!G.BFS_d(e.edges[0].v1)){
             if(!state){
                 //cut edge set is connected and without cycle
-                // printf("find good set\n");
+                printf("find good set\n");
                 // for(edge& er:e.edges){
                 //     insert_edge(er);
                 // }
@@ -972,8 +1020,8 @@ bool DirectedGraph::Relax_rec(int depth,vector<edgeset> &unable_edges,edgeset& e
         }
     }
     check = clock();
-    if((double)(check - start) / CLOCKS_PER_SEC>55){
-        printf("time out\n");
+    if((double)(check - start) / CLOCKS_PER_SEC>TIME_LIMIT){
+        // printf("time out\n");
         return 0;
     }
 

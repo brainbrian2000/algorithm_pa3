@@ -67,7 +67,7 @@ int main(int argc, char* argv[]){
         dg.MST();
         FILE* fout = fopen(argv[2], "w");
         // dg.dump();
-        // dg.Relax();
+        dg.Relax();
         // printf("check\n");
         DirectedGraph dg2;
         // dg.check_connect_cycle(0);
@@ -77,7 +77,7 @@ int main(int argc, char* argv[]){
         if(dg.topological_cycle(dg2)){
             printf("with cycle\n");
         }else{
-            printf("no cycle and connected\n");
+            // printf("no cycle and connected\n");
         }
         // printf("check\n");
         
@@ -85,7 +85,8 @@ int main(int argc, char* argv[]){
         // dg.dump();
         dg.OutToFile(fout);
         fclose(fout);
-
+        dg.check=clock();
+        printf("Time cost %lf\n",(double)(dg.check-dg.start)/CLOCKS_PER_SEC);
     }else{
         #if DEBUG
             printf("not expected input type\n");
