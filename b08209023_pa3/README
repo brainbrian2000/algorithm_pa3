@@ -1,0 +1,31 @@
+# Algorigthm PA3 cycle break problem
+```
+20231228
+
+using g++ -std=c++11 
+```
+
+## Author
+- B08209023 Chieh-Hsiang, Fan
+  - NTU AS/ESOE
+  > Github: brainbrian2000
+  >
+  > mail: 
+  > >b08209023@ntu.edu.tw
+  > >brainbrian2000@gmail.com 
+
+
+
+
+## How to Compile
+- `make clean`
+  - make sure -o file and bin file are clean
+  - avoid macos/windows/linux confilct and arch conflict
+- `make`
+  - make file, the file will at ./bin
+## How to execute
+- At this moment, you should still at `[]/b08209023_pa3`
+- run
+  - `./bin/cb [input_filename] [output_filename]`
+## About Program
+- The program will execute in 59 seconds and return result in output file

@@ -11,6 +11,7 @@ using namespace std;
 class DirectedGraph{
     public:
         clock_t start, check;
+        int unused_weight=999999999;
         int notused=0;
         int edge_size;
         int vertex_size;
@@ -29,6 +30,7 @@ class DirectedGraph{
         bool BFS_u(int v_start);//return for every vertex is connected or not
         bool check_connect_cycle(int index);
         bool Relax();
+        bool Relax2();
         bool Relax_rec(int depth,vector<edgeset> &unable_edges,edgeset& e,DirectedGraph &G,vector<edgeset> &edge_sets,vector<edge> &g_able_edges);
         bool topological_cycle(DirectedGraph &G);
         int faster=0,slower=0;

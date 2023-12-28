@@ -44,9 +44,10 @@ int main(int argc, char* argv[]){
         printf("Graph type: %s", gtype);
     #endif
     UndirectedGraph ug;
-    DirectedGraph dg;
-    DirectedGraph dg2;
+    DirectedGraph dg,ddg;
+    DirectedGraph dg2,ddg2;
     dg.start = clock();
+    ddg.start = clock();
     // if(strcmp(gtype,"u\n")==0){
     if(gtype[0]=='u'){
         #if DEBUG
@@ -65,25 +66,45 @@ int main(int argc, char* argv[]){
         #endif
         // dg.clear();
         dg.init_arr(fin);
+        ddg=dg;
         dg.MST();
-        FILE* fout = fopen(argv[2], "w");
-        // dg.dump();
+        ddg.MST();
         dg.Relax();
+        // ddg.start=clock();
+        ddg.Relax2();
+        // dg.dump();
         // printf("check\n");
         // dg.check_connect_cycle(0);
-        if(dg.BFS_u(0)){
-            printf("not connected\n");
-        }
-        if(dg.topological_cycle(dg2)){
-            printf("with cycle\n");
+        FILE* fout = fopen(argv[2], "w");
+        // printf("dg.unused_weight: %d\n",dg.unused_weight);
+        // printf("ddg.unused_weight: %d\n",ddg.unused_weight);
+        if(dg.unused_weight<ddg.unused_weight){
+        // printf("check dg\n");
+            if(dg.BFS_u(0)){
+                printf("not connected\n");
+            }
+            if(dg.topological_cycle(dg2)){
+                printf("with cycle\n");
+            }else{
+                printf("dg no cycle and connected\n");
+            }
+            dg.OutToFile(fout);
         }else{
-            // printf("no cycle and connected\n");
+        // printf("check delay-dg\n");
+            if(ddg.BFS_u(0)){
+                printf("not connected\n");
+            }
+            if(ddg.topological_cycle(ddg2)){
+                printf("with cycle\n");
+            }else{
+                printf("delay-dg no cycle and connected\n");
+            }
+            ddg.OutToFile(fout);
         }
         // printf("check\n");
         
         
         // dg.dump();
-        dg.OutToFile(fout);
         fclose(fout);
     }else{
         #if DEBUG
