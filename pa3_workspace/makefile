@@ -21,5 +21,3 @@ directed.o	: src/directed.cpp src/directed.h src/unit.h
 			$(CC) $(CFLAGS) $(OPTFLAGS) $< -o $@
 clean:
 		rm -rf *.o bin/*
-cleanobj:
-		rm -rf *.o
