@@ -658,8 +658,8 @@ void DirectedGraph::insert_edge(edge& e){
 #define CutInsFunc 0
 #define TIME_LIMIT 59.5
 #define using_rec 0
-#define SearchDeepLimitOn 0
-#define SearchDeepLimit 500
+#define SearchDeepLimitOn 1
+#define SearchDeepLimit 10000
 /**
  * Relax->detect the unused edge and add it by decreasing order of weight
  * using topological_cycle to check cycle elements and return it by reference G
@@ -776,7 +776,7 @@ bool DirectedGraph::Relax(){
                                     // using DP to cut impossible edges
                                     count =0;
 
-                                    if(G.edge_size>200||edge_size>2000){
+                                    if(G.edge_size>400||edge_size>2000){
                                         for(int j=0;j<able_size;j++){
                                                 ej = g_able_edges[j];
                                                 // printf("ej ek: %d %d\n",ej.weight,ek.weight );
@@ -791,7 +791,7 @@ bool DirectedGraph::Relax(){
                                                     edge_sets.push_back(es);
                                                 }
                                         }
-                                    }else if(G.edge_size>100){//||edge_size>900){
+                                    }else if(G.edge_size>100){//edge_size>900){
                                         for(int j=0;j<able_size;j++){
                                             ej = g_able_edges[j];
                                             // printf("ej ek: %d %d\n",ej.weight,ek.weight );
