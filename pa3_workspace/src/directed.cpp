@@ -328,6 +328,8 @@ bool DirectedGraph:: BFS_d(int v_start){
             #endif
             if(e.v2==v_start){
                 return 1;
+            }else if(u.dfs_color==2){
+                return 1;//find already finded and searched vertex  
             }else if(u.bfs_color==0){
                 u.bfs_color = 1; //set gray
                 u.bfs_d = v.bfs_d+1;
@@ -732,7 +734,7 @@ bool DirectedGraph::Relax(){
     while(prev_weight != c_weight){
         unused_weight = c_weight;
         check = clock();
-        printf("weight %d at time: %f\n",c_weight,(double)(check-start)/CLOCKS_PER_SEC);
+        // printf("weight %d at time: %f\n",c_weight,(double)(check-start)/CLOCKS_PER_SEC);
         prev_weight = c_weight;
         jumpbackpoint:
         int counter = 0;
@@ -997,8 +999,8 @@ bool DirectedGraph::Relax(){
                                             DirectedGraph temp;
                                             bool state=0;
                                             for(edge& er: edge_set_rec.edges){
-                                                if(G.BFS_d(er.v1)){
-                                                // if(G.DFS_d(er.v1)){
+                                                // if(G.BFS_d(er.v1)){
+                                                if(G.DFS_d(er.v1)){
                                                     state=1;
                                                     break;
                                                 }
