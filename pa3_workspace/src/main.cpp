@@ -91,7 +91,7 @@ int main(int argc, char* argv[]){
     }
     fclose(fin);
     dg.check=clock();
-    printf("Time cost %lf\n",(double)(dg.check-dg.start)/CLOCKS_PER_SEC);
+    // printf("Time cost %lf\n",(double)(dg.check-dg.start)/CLOCKS_PER_SEC);
     
     
     return 0;
