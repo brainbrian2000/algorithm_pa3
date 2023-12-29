@@ -27,6 +27,7 @@ class DirectedGraph{
         void OutToFile(FILE *fout);
         void clear();
         bool BFS_d(int v_start);//return for cycle exist or not from v_start
+        bool DFS_d(int v_start);//return for cycle exist or not from v_start
         bool BFS_u(int v_start);//return for every vertex is connected or not
         bool check_connect_cycle(int index);
         bool Relax();

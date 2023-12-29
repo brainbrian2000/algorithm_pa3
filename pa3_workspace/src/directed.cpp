@@ -343,6 +343,51 @@ bool DirectedGraph:: BFS_d(int v_start){
     return 0; 
 }
 
+/**
+ * 
+*/
+bool DirectedGraph::DFS_d(int v_start){
+    #if DEBUG
+        printf("DFS_d start with %d initial\n",v_start);
+    #endif
+    stack<int> s;
+    //clean all vertex
+    for(vertex& v:vertices){
+        v.clean_dfs();
+    }
+    s.push(v_start);
+    while(!s.empty()){
+        vertex& v = vertices[s.top()];
+        #if DEBUG
+            printf("DFS_d v.id: %d \nwith:",v.id);
+        #endif
+        s.pop();
+        v.dfs_color = 2;//set black
+        for(edge& e:v.out_edges){
+            vertex& u = vertices[e.v2];
+            #if DEBUG
+                printf(" %d",u.id);
+            #endif
+            if(e.v2==v_start){
+                return 1;
+            }else if(u.dfs_color==0){
+                u.dfs_color = 1; //set gray
+                u.dfs_t = v.dfs_t+1;
+                s.push(e.v2);
+                u.dfs_f = v.id;
+            }
+            
+        }
+        #if DEBUG
+            printf("\n");
+        #endif
+    }
+    return 0; 
+}
+
+
+
+
 #define DEBUG_u 0
 /**
  * return 1 if there with not only one set
@@ -656,7 +701,7 @@ void DirectedGraph::insert_edge(edge& e){
 
 #define EarlyJump 1
 #define CutInsFunc 0
-#define TIME_LIMIT 50
+#define TIME_LIMIT 59.5
 #define using_rec 0
 #define SearchDeepLimitOn 1
 #define SearchDeepLimit 10000
@@ -899,8 +944,10 @@ bool DirectedGraph::Relax(){
                                     if(edge_sets.size()==0){
                                         goto giveup_cut_this_edge;
                                     }
-
+                                    // clock_t test;
+                                    // test = clock();
                                     sort(edge_sets.begin(),edge_sets.end());
+                                    // printf("time sort cost: %ld\n ",clock()-test );
                                     // for(int j=0;j<edge_sets.size();j++){
                                         // edgeset& es = edge_sets[j];
                                     check = clock();
@@ -951,6 +998,7 @@ bool DirectedGraph::Relax(){
                                             bool state=0;
                                             for(edge& er: edge_set_rec.edges){
                                                 if(G.BFS_d(er.v1)){
+                                                // if(G.DFS_d(er.v1)){
                                                     state=1;
                                                     break;
                                                 }
