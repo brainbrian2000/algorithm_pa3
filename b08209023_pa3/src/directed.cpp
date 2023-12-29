@@ -661,6 +661,7 @@ void DirectedGraph::insert_edge(edge& e){
 #define SearchDeepLimitOn 1
 #define SearchDeepLimit 10000
 #define jumpback 0
+
 /**
  * Relax->detect the unused edge and add it by decreasing order of weight
  * using topological_cycle to check cycle elements and return it by reference G
