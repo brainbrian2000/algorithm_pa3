@@ -29,7 +29,7 @@ int main(int argc, char* argv[]){
     // read input file and check if it is directed or undirected
     // string type;
     FILE* fin = fopen(argv[1], "r");
-    char gtype[20];
+    char gtype[20],*temp;
     #if DEBUG
         printf("\nargc: %d\n", argc);
         printf("argv[0]: %s\n", argv[0]);
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]){
         printf("input file error\n");
         return 0;
     }   
-    fgets(gtype, 20, fin);
+    temp=fgets(gtype, 20, fin);
     #if DEBUG
         printf("Graph type: %s", gtype);
     #endif

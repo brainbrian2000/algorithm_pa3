@@ -528,7 +528,7 @@ bool DirectedGraph::topological_cycle(DirectedGraph &G){
     }
     //cocktile
     while(!not_source_sink.empty()){
-        check = clock();
+        // check = clock();
         // if((double)(check-start)/CLOCKS_PER_SEC>TIME_LIMIT){
         //     printf("time out\n");
         //     return 1;
@@ -656,11 +656,14 @@ void DirectedGraph::insert_edge(edge& e){
 
 #define EarlyJump 1
 #define CutInsFunc 0
-#define TIME_LIMIT 59.5
+#define TIME_LIMIT 59
 #define using_rec 0
 #define SearchDeepLimitOn 1
 #define SearchDeepLimit 10000
 #define jumpback 0
+#define LIMIT_TEST 0
+#define FAST_DECRESING 0
+#define PrintNowWeight 0
 /**
  * Relax->detect the unused edge and add it by decreasing order of weight
  * using topological_cycle to check cycle elements and return it by reference G
@@ -673,13 +676,24 @@ bool DirectedGraph::Relax(){
     DirectedGraph G;
     int count=0;
     bool state_restart;
-    int prev_weight=0,c_weight=1;
+    int prev_weight=0,c_weight;
+    c_weight=0;
+    for(vector<edge>&bucket:unused_buckets){
+        for(edge&e:bucket){
+                c_weight+=e.weight;
+        }
+    }
+    int upperlimit = 0;
     while(prev_weight != c_weight){
+        unused_weight = c_weight;
+        check = clock();
+        printf("weight %d at time: %f\n",c_weight,(double)(check-start)/CLOCKS_PER_SEC);
         prev_weight = c_weight;
+        jumpbackpoint:
+        int counter = 0;
         for(int oi=200;oi>=101;oi--){
             if(unused_buckets[oi].size()!=0){
                 for (int oj=oi;oj>=101;oj--){
-                    jumpbackpoint:
                     if(unused_buckets[oj].size()!=0){
                         // printf("oi oj: %d %d\n",oi,oj);
                         temp_buckets[oj].clear();
@@ -777,7 +791,7 @@ bool DirectedGraph::Relax(){
                                     
                                     // using DP to cut impossible edges
                                     count =0;
-
+                                #if !LIMIT_TEST
                                     if(G.edge_size>400||edge_size>2000){
                                         for(int j=0;j<able_size;j++){
                                                 ej = g_able_edges[j];
@@ -827,6 +841,7 @@ bool DirectedGraph::Relax(){
                                             }
                                         }
                                     }else{
+                                #endif
                                         for(int j=0;j<able_size;j++){
                                             ej = g_able_edges[j];
                                                 if(ej.weight>edge_set_rec.total_weight){
@@ -874,7 +889,9 @@ bool DirectedGraph::Relax(){
                                                 }
                                             }
                                         }
+                                #if !LIMIT_TEST
                                     }
+                                #endif
 
 
 
@@ -946,6 +963,8 @@ bool DirectedGraph::Relax(){
                                                 // dump();                                            
                                                 // printf("[DUMP OF MOTHER END]\n");
                                                 // }
+
+                                                //do cut in big graph
                                                 for(edge& e:es.edges){
                                                     #if CutInsFunc
                                                         cut_edge(e);
@@ -975,7 +994,6 @@ bool DirectedGraph::Relax(){
                                                 // printf("[DUMP OF MOTHER AFTER END]\n\n");
 
                                                 goto got_to_next_edge;
-                                                //do cut in big graph
                                             }else{
                                                 edge_sets_available.push_back(es);
                                             }
@@ -1060,6 +1078,16 @@ bool DirectedGraph::Relax(){
                     continue;    
                     #if EarlyJump
                     got_to_next_edge:
+                        c_weight=0;
+                        for(vector<edge>&bucket:unused_buckets){
+                            for(edge&e:bucket){
+                                    c_weight+=e.weight;
+                            }
+                        }
+                        unused_weight = c_weight;
+                        #if PrintNowWeight
+                            printf("now weight in &d==%d %d is %d \n",oi,oj,c_weight);
+                        #endif
                         #if jumpback
                             goto jumpbackpoint;
                         #endif
@@ -1079,12 +1107,8 @@ bool DirectedGraph::Relax(){
                     c_weight+=e.weight;
             }
         }
-        unused_weight = c_weight;
-
-
     }
 
-    // printf("%d %d \n",prev_weight,c_weight);
 
     return 0;
 }

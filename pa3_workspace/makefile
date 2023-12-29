@@ -14,10 +14,14 @@ all	: bin/cb
 bin/cb	: undirected.o directed.o main.o
 			$(CC) $(OPTFLAGS) $^ -o $@
 main.o 	   	: src/main.cpp 
-			$(CC) $(CFLAGS) $< -o $@
+			$(CC) $(CFLAGS) $(OPTFLAGS) $< -o $@
 undirected.o	: src/undirected.cpp src/undirected.h src/unit.h
 			$(CC) $(CFLAGS) $(OPTFLAGS) $< -o $@
 directed.o	: src/directed.cpp src/directed.h src/unit.h
 			$(CC) $(CFLAGS) $(OPTFLAGS) $< -o $@
 clean:
 		rm -rf *.o bin/*
+cb2: undirected.o directed.o main.o
+			$(CC) $(OPTFLAGS) $^ -o bin/cb2
+cleanobj:
+		rm -rf *.o

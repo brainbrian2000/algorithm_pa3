@@ -1,4 +1,4 @@
-make clean
+# make clean
 make
 #undirected
 ./bin/cb ./inputs/public_case_1.in ./outputs/public_case_1.out
