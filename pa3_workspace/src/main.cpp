@@ -81,14 +81,6 @@ int main(int argc, char* argv[]){
         // printf("ddg.unused_weight: %d\n",ddg.unused_weight);
         // if(dg.unused_weight<ddg.unused_weight){
         // // printf("check dg\n");
-        //     if(dg.BFS_u(0)){
-        //         printf("not connected\n");
-        //     }
-        //     if(dg.topological_cycle(dg2)){
-        //         printf("with cycle\n");
-        //     }else{
-        //         // printf("dg no cycle and connected\n");
-        //     }
         //     dg.OutToFile(fout);
         // }else{
         // // printf("check delay-dg\n");
@@ -105,6 +97,14 @@ int main(int argc, char* argv[]){
         // printf("check\n");
         
         
+        if(dg.BFS_u(0)){
+            printf("not connected\n");
+        }
+        if(dg.topological_cycle(dg2)){
+            printf("with cycle\n");
+        }else{
+            // printf("dg no cycle and connected\n");
+        }
         dg.OutToFile(fout);
         // dg.dump();
         fclose(fout);
