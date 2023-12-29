@@ -28,6 +28,7 @@ class edge{
 class edgeset{
     public:
         int total_weight=0;
+        bool success=0;
         vector<edge> edges;
         bool operator<(const edgeset& e) const{
             return total_weight < e.total_weight;
@@ -39,6 +40,9 @@ class edgeset{
             return total_weight > e.total_weight;
         }
 };
+
+
+
 
 
 class vertex{

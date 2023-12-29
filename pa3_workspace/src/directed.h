@@ -31,8 +31,6 @@ class DirectedGraph{
         bool BFS_u(int v_start);//return for every vertex is connected or not
         bool check_connect_cycle(int index);
         bool Relax();
-        bool Relax2();
-        bool Relax_rec(int depth,vector<edgeset> &unable_edges,edgeset& e,DirectedGraph &G,vector<edgeset> &edge_sets,vector<edge> &g_able_edges);
         bool topological_cycle(DirectedGraph &G);
         int faster=0,slower=0;
         void dump();
