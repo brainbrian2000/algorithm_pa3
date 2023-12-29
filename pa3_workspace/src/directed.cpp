@@ -740,6 +740,10 @@ bool DirectedGraph::Relax(){
                 c_weight+=e.weight;
         }
     }
+    check = clock();
+    if((check-start)>CLOCKS_PER_SEC*58){
+        return 0;
+    }
     int upperlimit = 0;
     while(prev_weight != c_weight){
         unused_weight = c_weight;
