@@ -656,7 +656,7 @@ void DirectedGraph::insert_edge(edge& e){
 
 #define EarlyJump 1
 #define CutInsFunc 0
-#define TIME_LIMIT 59
+#define TIME_LIMIT 50
 #define using_rec 0
 #define SearchDeepLimitOn 1
 #define SearchDeepLimit 10000
@@ -792,7 +792,7 @@ bool DirectedGraph::Relax(){
                                     // using DP to cut impossible edges
                                     count =0;
                                 #if !LIMIT_TEST
-                                    if(G.edge_size>400||edge_size>2000){
+                                    if(G.edge_size>256||edge_size>2000){
                                         for(int j=0;j<able_size;j++){
                                                 ej = g_able_edges[j];
                                                 // printf("ej ek: %d %d\n",ej.weight,ek.weight );

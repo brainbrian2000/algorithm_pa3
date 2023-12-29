@@ -778,7 +778,7 @@ bool DirectedGraph::Relax(){
                                     // using DP to cut impossible edges
                                     count =0;
 
-                                    if(G.edge_size>400||edge_size>2000){
+                                    if(G.edge_size>256||edge_size>2000){
                                         for(int j=0;j<able_size;j++){
                                                 ej = g_able_edges[j];
                                                 // printf("ej ek: %d %d\n",ej.weight,ek.weight );
